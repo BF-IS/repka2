@@ -1,1 +1,12 @@
+import sqlite3
 
+with sqlite3.connect('my_db.db') as db:
+    cursor = db.cursor()
+    query = """ INSERT INTO faces (id, name, path) VALUES(1, 'Ryan_Gosling', '/home/blackyz/img.png') """ #создает запрос на создание в таблице faces строки с даными id = 1, name = Ryan_Gosling, path = /home/blackyz/img.png  
+    query1 = """ INSERT INTO faces (id, name, path) VALUES(2, 'Okabe_Rintarou', '/home/blackyz/okarin.png') """ #создает запрос на создание в таблице faces строки с даными id = 2, name = Okabe_Rintarou, path = /home/blackyz/okarin.png
+    query2 = """ INSERT INTO faces (id, name, path) VALUES(3, 'Pavel_Andreevich', '/home/blackyz/godpa.png') """ #создает запрос на создание в таблице faces строки с даными id = 3, name = Pavel_Andreevich , path = /home/blackyz/godpa.png
+    cursor.execute(query)
+    cursor.execute(query1)
+    cursor.execute(query2)
+
+#p.s необходимо пофиксить path, т.е вместо типа данных TEXT сделать бинарный или изображение
