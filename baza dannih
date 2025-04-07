@@ -1,10 +1,74 @@
-import sqlite3
+''' Кароче это усовершенственная бдшка, с котрой не будет возни. (Вот что странно, первый вариант бдшки был всего ~15 строк, а тут 70 :D. Зато я наконец то придумал как хранить фотографии в базе) '''
 
-with sqlite3.connect('my_db.db') as db:
-    cursor = db.cursor()
-    #query = """ CREATE TABLE IF NOT EXISTS faces(id INTEGER, name TEXT, photo BLOB """
-    #query0 = """ INSERT INTO faces (id, name, photo) VALUES(1, 'Ryan_Gosling', '') """ #создает запрос на создание в таблице faces строки с даными id = 1, name = Ryan_Gosling,  
-    cursor.execute(query)
-    cursor.execute(query0)
- 
+import sqlite3
+import os
+from PIL import Image
+
+
+def create_database(db_name="users.db"):
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            photo BLOB
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+def add_user(username, photo_path, db_name="users.db"):
+    if not os.path.exists(photo_path):
+        print(f"Фотография по пути {photo_path} не найдена.")
+        return
+
+    try:
+        with Image.open(photo_path) as img:
+            img_bytes = img.tobytes()
+
+        conn = sqlite3.connect(db_name)
+        cursor = conn.cursor()
+        cursor.execute("INSERT INTO users (username, photo) VALUES (?, ?)", (username, img_bytes))
+        conn.commit()
+        conn.close()
+        print(f"Пользователь {username} успешно добавлен.")
+    except Exception as e:
+        print(f"Ошибка при добавлении пользователя: {e}")
+
+
+def get_user(username, db_name="users.db"):
+    conn = sqlite3.connect(db_name)
+    cursor = conn.cursor()
+    cursor.execute("SELECT id, username, photo FROM users WHERE username = ?", (username,))
+    user = cursor.fetchone()
+    conn.close()
+    return user
+
+
+def display_user_photo(username, db_name="users.db", output_path="output.jpg"):
+    user = get_user(username, db_name)
+    if user:
+        user_id, username, photo_data = user
+        try:
+            img = Image.frombytes("RGB", (100, 100), photo_data)  #нужно будет адаптировать под реальный размер
+            img.save(output_path)
+            print(f"Фотография пользователя {username} сохранена в {output_path}")
+        except Exception as e:
+            print(f"Ошибка при обработке фотографии: {e}")
+    else:
+        print(f"Пользователь {username} не найден.")
+
+
+create_database()
+add_user("Okabe_Rintarou", "C:\\Users\godpa\Downloads\irrmages.jpg")
+
+display_user_photo("user1")
+
+user_info = get_user("user1")
+if user_info:
+    print(f"Информация о пользователе: {user_info}")
+
 
